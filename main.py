@@ -1,4 +1,3 @@
-
 import asyncio
 import logging
 from ruuvitag_sensor.ruuvi import RuuviTagSensor
@@ -27,7 +26,6 @@ async def main():
             async for data in RuuviTagSensor.get_data_async():
                 mac = data[0]
                 sensor_data = data[1]
-                _logger.debug(f"Received data from {mac}: {sensor_data}")
 
                 # Check if the RuuviTag object already exists
                 ruuvi_tag_object = None
@@ -47,7 +45,7 @@ async def main():
                     await ruuvi_tag_object.add_variable(idx, "AccelerationZ", 0, ua.VariantType.Int64)
                     await ruuvi_tag_object.add_variable(idx, "BatteryVoltage", 0, ua.VariantType.Int64)
 
-                # Update the OPC UA variables
+                # Update the OPC UA variables and log the data
                 temp_var = await ruuvi_tag_object.get_child(f"{idx}:Temperature")
                 humidity_var = await ruuvi_tag_object.get_child(f"{idx}:Humidity")
                 pressure_var = await ruuvi_tag_object.get_child(f"{idx}:Pressure")
@@ -56,13 +54,23 @@ async def main():
                 accel_z_var = await ruuvi_tag_object.get_child(f"{idx}:AccelerationZ")
                 voltage_var = await ruuvi_tag_object.get_child(f"{idx}:BatteryVoltage")
 
-                await temp_var.write_value(sensor_data.get('temperature'))
-                await humidity_var.write_value(sensor_data.get('humidity'))
-                await pressure_var.write_value(sensor_data.get('pressure'))
-                await accel_x_var.write_value(sensor_data.get('acceleration_x'))
-                await accel_y_var.write_value(sensor_data.get('acceleration_y'))
-                await accel_z_var.write_value(sensor_data.get('acceleration_z'))
-                await voltage_var.write_value(sensor_data.get('battery'))
+                temp_val = sensor_data.get('temperature')
+                humidity_val = sensor_data.get('humidity')
+                pressure_val = sensor_data.get('pressure')
+                accel_x_val = sensor_data.get('acceleration_x')
+                accel_y_val = sensor_data.get('acceleration_y')
+                accel_z_val = sensor_data.get('acceleration_z')
+                voltage_val = sensor_data.get('battery')
+
+                await temp_var.write_value(temp_val)
+                await humidity_var.write_value(humidity_val)
+                await pressure_var.write_value(pressure_val)
+                await accel_x_var.write_value(accel_x_val)
+                await accel_y_var.write_value(accel_y_val)
+                await accel_z_var.write_value(accel_z_val)
+                await voltage_var.write_value(voltage_val)
+
+                _logger.info(f"Served data for {mac}: Temp={temp_val}, Humidity={humidity_val}, Pressure={pressure_val}, AccelX={accel_x_val}, AccelY={accel_y_val}, AccelZ={accel_z_val}, Voltage={voltage_val}")
 
 if __name__ == "__main__":
     try:
