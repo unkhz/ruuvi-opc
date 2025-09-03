@@ -7,6 +7,9 @@ from asyncua import Server, ua
 logging.basicConfig(level=logging.INFO)
 _logger = logging.getLogger(__name__)
 
+def get_friendly_name(mac):
+    return mac.replace(":", "")[:4]
+
 async def main():
     # OPC UA Server setup
     server = Server()
@@ -27,17 +30,19 @@ async def main():
             async for data in RuuviTagSensor.get_data_async():
                 mac = data[0]
                 sensor_data = data[1]
+                friendly_name = get_friendly_name(mac)
 
                 # Check if the RuuviTag object already exists
                 ruuvi_tag_object = None
                 for child in await ruuvi_tags_folder.get_children():
-                    if await child.read_browse_name() == ua.QualifiedName(mac, idx):
+                    if await child.read_browse_name() == ua.QualifiedName(friendly_name, idx):
                         ruuvi_tag_object = child
                         break
                 
                 # If the object doesn't exist, create it
                 if ruuvi_tag_object is None:
-                    ruuvi_tag_object = await ruuvi_tags_folder.add_object(idx, mac)
+                    ruuvi_tag_object = await ruuvi_tags_folder.add_object(idx, friendly_name)
+
                     temp_var = await ruuvi_tag_object.add_variable(idx, "Temperature", 0.0)
                     await temp_var.write_attribute(ua.AttributeIds.AccessLevel, ua.DataValue(ua.Variant(ua.AccessLevel.CurrentRead | ua.AccessLevel.HistoryRead, ua.VariantType.Byte)))
                     await temp_var.write_attribute(ua.AttributeIds.UserAccessLevel, ua.DataValue(ua.Variant(ua.AccessLevel.CurrentRead | ua.AccessLevel.HistoryRead, ua.VariantType.Byte)))
@@ -74,13 +79,13 @@ async def main():
                     await voltage_var.write_attribute(ua.AttributeIds.Historizing, ua.DataValue(True))
 
                 # Update the OPC UA variables and log the data
-                temp_var = await ruuvi_tag_object.get_child(f"{idx}:Temperature")
-                humidity_var = await ruuvi_tag_object.get_child(f"{idx}:Humidity")
-                pressure_var = await ruuvi_tag_object.get_child(f"{idx}:Pressure")
-                accel_x_var = await ruuvi_tag_object.get_child(f"{idx}:AccelerationX")
-                accel_y_var = await ruuvi_tag_object.get_child(f"{idx}:AccelerationY")
-                accel_z_var = await ruuvi_tag_object.get_child(f"{idx}:AccelerationZ")
-                voltage_var = await ruuvi_tag_object.get_child(f"{idx}:BatteryVoltage")
+                temp_var = await ruuvi_tag_object.get_child([f"{idx}:Temperature"])
+                humidity_var = await ruuvi_tag_object.get_child([f"{idx}:Humidity"])
+                pressure_var = await ruuvi_tag_object.get_child([f"{idx}:Pressure"])
+                accel_x_var = await ruuvi_tag_object.get_child([f"{idx}:AccelerationX"])
+                accel_y_var = await ruuvi_tag_object.get_child([f"{idx}:AccelerationY"])
+                accel_z_var = await ruuvi_tag_object.get_child([f"{idx}:AccelerationZ"])
+                voltage_var = await ruuvi_tag_object.get_child([f"{idx}:BatteryVoltage"])
 
                 temp_val = sensor_data.get('temperature')
                 humidity_val = sensor_data.get('humidity')
@@ -98,7 +103,7 @@ async def main():
                 await accel_z_var.write_value(accel_z_val)
                 await voltage_var.write_value(voltage_val)
 
-                _logger.info(f"Served data for {mac}: Temp={temp_val}, Humidity={humidity_val}, Pressure={pressure_val}, AccelX={accel_x_val}, AccelY={accel_y_val}, AccelZ={accel_z_val}, Voltage={voltage_val}")
+                _logger.info(f"Served data for {friendly_name}: Temp={temp_val}, Humidity={humidity_val}, Pressure={pressure_val}, AccelX={accel_x_val}, AccelY={accel_y_val}, AccelZ={accel_z_val}, Voltage={voltage_val}")
 
 if __name__ == "__main__":
     try:
