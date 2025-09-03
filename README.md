@@ -1,4 +1,3 @@
-
 # Ruuvi OPC UA Server
 
 This project reads RuuviTag Bluetooth Low Energy (BLE) measurements and publishes them as an OPC UA server.
@@ -57,3 +56,21 @@ Replace `<your-ip-address>` with the IP address of the machine running the serve
     *   Once connected, you can browse the server's address space in the `Address Space` window.
     *   You will find the RuuviTags under the `RuuviTags` folder.
 
+### Creating a Trend View in UaExpert
+
+To visualize the sensor data over time, you can create a trend view in UaExpert:
+
+1.  **Add a new document:**
+
+    *   Click the `+` button in the `Documents` panel.
+    *   Select `Trend View` from the list.
+
+2.  **Add variables to the trend view:**
+
+    *   Drag and drop the variables you want to monitor (e.g., `Temperature`, `Humidity`, `Pressure`) from the `Address Space` window into the trend view.
+
+3.  **Start the trend:**
+
+    *   The trend view will automatically start plotting the data as it is received from the server.
+
+You can now see the sensor readings from your RuuviTags plotted in real-time.
