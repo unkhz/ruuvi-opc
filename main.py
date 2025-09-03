@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import argparse
 from ruuvitag_sensor.ruuvi import RuuviTagSensor
 from asyncua import Server, ua
 
@@ -11,14 +12,20 @@ def get_friendly_name(mac):
     return mac.replace(":", "")[:4]
 
 async def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--name", default="RuuviServer")
+    parser.add_argument("--uri", default="http://examples.freeopcua.github.io")
+    args = parser.parse_args()
+
     # OPC UA Server setup
     server = Server()
     await server.init()
-    server.set_endpoint("opc.tcp://0.0.0.0:4840/ruuvi/server/")
+    server.set_endpoint(f"opc.tcp://0.0.0.0:4840/{args.name}/server/")
+    server.set_server_name(args.name)
     server.historizing = True # Enable historizing
     
     # Setup our own namespace
-    uri = "http://examples.freeopcua.github.io"
+    uri = args.uri
     idx = await server.register_namespace(uri)
 
     # Create a folder for RuuviTags
