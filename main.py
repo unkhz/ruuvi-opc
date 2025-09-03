@@ -12,6 +12,7 @@ async def main():
     server = Server()
     await server.init()
     server.set_endpoint("opc.tcp://0.0.0.0:4840/ruuvi/server/")
+    server.historizing = True # Enable historizing
     
     # Setup our own namespace
     uri = "http://examples.freeopcua.github.io"
@@ -37,13 +38,40 @@ async def main():
                 # If the object doesn't exist, create it
                 if ruuvi_tag_object is None:
                     ruuvi_tag_object = await ruuvi_tags_folder.add_object(idx, mac)
-                    await ruuvi_tag_object.add_variable(idx, "Temperature", 0.0)
-                    await ruuvi_tag_object.add_variable(idx, "Humidity", 0.0)
-                    await ruuvi_tag_object.add_variable(idx, "Pressure", 0.0)
-                    await ruuvi_tag_object.add_variable(idx, "AccelerationX", 0, ua.VariantType.Int64)
-                    await ruuvi_tag_object.add_variable(idx, "AccelerationY", 0, ua.VariantType.Int64)
-                    await ruuvi_tag_object.add_variable(idx, "AccelerationZ", 0, ua.VariantType.Int64)
-                    await ruuvi_tag_object.add_variable(idx, "BatteryVoltage", 0, ua.VariantType.Int64)
+                    temp_var = await ruuvi_tag_object.add_variable(idx, "Temperature", 0.0)
+                    await temp_var.write_attribute(ua.AttributeIds.AccessLevel, ua.DataValue(ua.Variant(ua.AccessLevel.CurrentRead | ua.AccessLevel.HistoryRead, ua.VariantType.Byte)))
+                    await temp_var.write_attribute(ua.AttributeIds.UserAccessLevel, ua.DataValue(ua.Variant(ua.AccessLevel.CurrentRead | ua.AccessLevel.HistoryRead, ua.VariantType.Byte)))
+                    await temp_var.write_attribute(ua.AttributeIds.Historizing, ua.DataValue(True))
+
+                    humidity_var = await ruuvi_tag_object.add_variable(idx, "Humidity", 0.0)
+                    await humidity_var.write_attribute(ua.AttributeIds.AccessLevel, ua.DataValue(ua.Variant(ua.AccessLevel.CurrentRead | ua.AccessLevel.HistoryRead, ua.VariantType.Byte)))
+                    await humidity_var.write_attribute(ua.AttributeIds.UserAccessLevel, ua.DataValue(ua.Variant(ua.AccessLevel.CurrentRead | ua.AccessLevel.HistoryRead, ua.VariantType.Byte)))
+                    await humidity_var.write_attribute(ua.AttributeIds.Historizing, ua.DataValue(True))
+
+                    pressure_var = await ruuvi_tag_object.add_variable(idx, "Pressure", 0.0)
+                    await pressure_var.write_attribute(ua.AttributeIds.AccessLevel, ua.DataValue(ua.Variant(ua.AccessLevel.CurrentRead | ua.AccessLevel.HistoryRead, ua.VariantType.Byte)))
+                    await pressure_var.write_attribute(ua.AttributeIds.UserAccessLevel, ua.DataValue(ua.Variant(ua.AccessLevel.CurrentRead | ua.AccessLevel.HistoryRead, ua.VariantType.Byte)))
+                    await pressure_var.write_attribute(ua.AttributeIds.Historizing, ua.DataValue(True))
+
+                    accel_x_var = await ruuvi_tag_object.add_variable(idx, "AccelerationX", 0, ua.VariantType.Int64)
+                    await accel_x_var.write_attribute(ua.AttributeIds.AccessLevel, ua.DataValue(ua.Variant(ua.AccessLevel.CurrentRead | ua.AccessLevel.HistoryRead, ua.VariantType.Byte)))
+                    await accel_x_var.write_attribute(ua.AttributeIds.UserAccessLevel, ua.DataValue(ua.Variant(ua.AccessLevel.CurrentRead | ua.AccessLevel.HistoryRead, ua.VariantType.Byte)))
+                    await accel_x_var.write_attribute(ua.AttributeIds.Historizing, ua.DataValue(True))
+
+                    accel_y_var = await ruuvi_tag_object.add_variable(idx, "AccelerationY", 0, ua.VariantType.Int64)
+                    await accel_y_var.write_attribute(ua.AttributeIds.AccessLevel, ua.DataValue(ua.Variant(ua.AccessLevel.CurrentRead | ua.AccessLevel.HistoryRead, ua.VariantType.Byte)))
+                    await accel_y_var.write_attribute(ua.AttributeIds.UserAccessLevel, ua.DataValue(ua.Variant(ua.AccessLevel.CurrentRead | ua.AccessLevel.HistoryRead, ua.VariantType.Byte)))
+                    await accel_y_var.write_attribute(ua.AttributeIds.Historizing, ua.DataValue(True))
+
+                    accel_z_var = await ruuvi_tag_object.add_variable(idx, "AccelerationZ", 0, ua.VariantType.Int64)
+                    await accel_z_var.write_attribute(ua.AttributeIds.AccessLevel, ua.DataValue(ua.Variant(ua.AccessLevel.CurrentRead | ua.AccessLevel.HistoryRead, ua.VariantType.Byte)))
+                    await accel_z_var.write_attribute(ua.AttributeIds.UserAccessLevel, ua.DataValue(ua.Variant(ua.AccessLevel.CurrentRead | ua.AccessLevel.HistoryRead, ua.VariantType.Byte)))
+                    await accel_z_var.write_attribute(ua.AttributeIds.Historizing, ua.DataValue(True))
+
+                    voltage_var = await ruuvi_tag_object.add_variable(idx, "BatteryVoltage", 0, ua.VariantType.Int64)
+                    await voltage_var.write_attribute(ua.AttributeIds.AccessLevel, ua.DataValue(ua.Variant(ua.AccessLevel.CurrentRead | ua.AccessLevel.HistoryRead, ua.VariantType.Byte)))
+                    await voltage_var.write_attribute(ua.AttributeIds.UserAccessLevel, ua.DataValue(ua.Variant(ua.AccessLevel.CurrentRead | ua.AccessLevel.HistoryRead, ua.VariantType.Byte)))
+                    await voltage_var.write_attribute(ua.AttributeIds.Historizing, ua.DataValue(True))
 
                 # Update the OPC UA variables and log the data
                 temp_var = await ruuvi_tag_object.get_child(f"{idx}:Temperature")
